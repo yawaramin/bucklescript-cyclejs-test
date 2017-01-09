@@ -18,15 +18,15 @@ let author t = t.author
 let msg t = t.msg
 let view t =
   Cycle_dom.(
-    h "div" ["class", "box"] [
-      h "article" ["class", "media"] [
-        h "div" ["class", "media-content"] [
-          h "div" ["class", "content"] [
+    h "div.box" [] [
+      h "article.media" [] [
+        h "div.media-content" [] [
+          h "div.content" [] [
             h "strong" ~text:(author t) [] [];
             h "span" ~text:" - 2017-01-01T16:01Z -" [] [];
             h "span" ~text:(msg t) [] [] ];
 
-          h "nav" ["class", "level"] [
-            h "div" ["class", "level-left"] [
-              h "a" ~text:"Reply" ["class", "level-item button"] [] ] ] ] ] ])
+          h "nav.level" [] [
+            h "div.level-left" [] [
+              h "a.level-left.button" ~text:"Reply" [] [] ] ] ] ] ])
 
