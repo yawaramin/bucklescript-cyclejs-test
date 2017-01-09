@@ -17,8 +17,10 @@ let timestamp t = t.timestamp
 let author t = t.author
 let msg t = t.msg
 let view t =
+  let comment_id = t |> id |> string_of_int in
+
   Cycle_dom.(
-    h "div.box" [] [
+    h "div.box" ["key", comment_id] [
       h "article.media" [] [
         h "div.media-content" [] [
           h "div.content" [] [
@@ -28,5 +30,8 @@ let view t =
 
           h "nav.level" [] [
             h "div.level-left" [] [
-              h "a.level-left.button" ~text:"Reply" [] [] ] ] ] ] ])
+              h ("a.level-left.button#reply-" ^ comment_id)
+                ~text:"Reply"
+                []
+                [] ] ] ] ] ])
 
