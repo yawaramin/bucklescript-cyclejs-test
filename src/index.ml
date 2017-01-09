@@ -5,7 +5,8 @@ let main _ =
     { dom =
         Comments.init_comment
           |> Xstream.singleton
-          |> Xstream.map (fun thread ->
+          |> Xstream.remember
+          |> Memory_stream.map (fun thread ->
             thread |> Comments.comment |> Comment.view) } ]
 
 let () =
