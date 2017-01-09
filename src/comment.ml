@@ -1,6 +1,6 @@
 type t =
   { id : int;
-    parent_id : int option;
+    reply_to : t option;
     timestamp : Js_date.t;
     author : string;
     msg : string }
@@ -8,30 +8,29 @@ type t =
 let init_id = 0
 let incr_id old_id = old_id + 1
 
-let make id ?parent_id author msg =
-  { id; parent_id; timestamp = Js_date.now (); author; msg }
+let make id ?reply_to author msg =
+  { id; reply_to; timestamp = Js_date.now (); author; msg }
 
 let id t = t.id
-let parent_id t = t.parent_id
+let reply_to t = t.reply_to
 let timestamp t = t.timestamp
 let author t = t.author
 let msg t = t.msg
 let view t =
+  let open Cycle_dom in
   let comment_id = t |> id |> string_of_int in
 
-  Cycle_dom.(
-    h "div.box" ["key", comment_id] [
-      h "article.media" [] [
-        h "div.media-content" [] [
-          h "div.content" [] [
-            h "strong" ~text:(author t) [] [];
-            h "span" ~text:" - 2017-01-01T16:01Z -" [] [];
-            h "span" ~text:(msg t) [] [] ];
+  h "div.box" ["key", comment_id] [
+    h "article.media" [] [
+      h "div.media-content" [] [
+        h "div.content" [] [
+          h "strong" [] [t |> author |> text];
+          text " - 2017-01-01T16:01Z -";
+          t |> msg |> text ];
 
-          h "nav.level" [] [
-            h "div.level-left" [] [
-              h ("a.level-left.button#reply-" ^ comment_id)
-                ~text:"Reply"
-                []
-                [] ] ] ] ] ])
+        h "nav.level" [] [
+          h "div.level-left" [] [
+            h ("a#reply-" ^ comment_id ^ ".button.level-left")
+              []
+              [text "Reply"] ] ] ] ] ]
 

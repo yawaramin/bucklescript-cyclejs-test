@@ -6,8 +6,7 @@ let main _ =
         Comments.init_comment
           |> Xstream.singleton
           |> Xstream.remember
-          |> Memory_stream.map (fun thread ->
-            thread |> Comments.comment |> Comment.view) } ]
+          |> Memory_stream.map Comments.view } ]
 
 let () =
   let app_id = "app" in
