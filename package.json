@@ -6,6 +6,8 @@
   "author": "Yawar Amin <yawar.amin@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "css-loader": "^0.26.1",
+    "style-loader": "^0.13.1",
     "webpack": "1.14.0",
     "webpack-dev-server": "^1.16.2"
   },
@@ -13,11 +15,10 @@
     "@cycle/dom": "^14.3.0",
     "@cycle/xstream-run": "^4.2.0",
     "bs-platform": "^1.4.0",
+    "bulma": "^0.3.0",
     "xstream": "^9.3.0"
   },
   "scripts": {
-    "release": "webpack -p lib/js/src/index.js lib/js/dist/index.js",
-    "pack": "webpack lib/js/src/index.js lib/js/dist/index.js",
     "dev-server": "webpack-dev-server --progress --colors --content-base build/",
     "compile": "bsb",
     "build": "bsb && yarn run pack",

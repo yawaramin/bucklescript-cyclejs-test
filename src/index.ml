@@ -1,6 +1,8 @@
 open Cycle_dom
 
 let main _ =
+  let _ = Bulma.bulma in
+
   [%bs.obj
     { dom =
         Comments.init_comment
