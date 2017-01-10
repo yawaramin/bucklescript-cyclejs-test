@@ -21,15 +21,15 @@ let view t =
   let open Cycle_dom in
   let comment_id = t |> id |> string_of_int in
 
-  h "li.box" ["key", comment_id] [
-    h "p.block" [] [
+  h "div" ~attrs:[%bs.obj { key = comment_id } ] [
+    h "p.block" [
       text "2017-01-01T16:01Z ";
-      h "strong" [] [t |> author |> append_colon |> text];
+      h "strong" [t |> author |> append_colon |> text];
       t |> msg |> text ];
 
-    h "p.control.has-addons" [] [
-      h ("a#up-" ^ comment_id ^ ".button.up") [] [text "+1"];
-      h ("a#reply-" ^ comment_id ^ ".button.reply") [] [text "Reply"];
-      h ("a#down-" ^ comment_id ^ ".button.is-danger.down") [] [
+    h "p.control.has-addons" [
+      h ("a#reply-" ^ comment_id ^ ".button.reply") [text "Reply"];
+      h ("a#up-" ^ comment_id ^ ".button.up") [text "+1"];
+      h ("a#down-" ^ comment_id ^ ".button.down") [
         text "-1"] ] ]
 

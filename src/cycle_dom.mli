@@ -2,7 +2,7 @@ type vnode
 
 val h :
   sel:string ->
-  attrs:(string * string) list ->
+  attrs:'a ->
   children:vnode list ->
   vnode
 
