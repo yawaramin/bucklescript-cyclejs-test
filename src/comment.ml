@@ -16,15 +16,36 @@ let reply_to t = t.reply_to
 let timestamp t = t.timestamp
 let author t = t.author
 let msg t = t.msg
-let append_colon string = string ^ ": "
+let append suffix to_string = to_string ^ suffix
+let datetime_format =
+  let num = "numeric" in
+
+  Intl.Date_time_format.make
+    ~options:
+      [%bs.obj
+        { year = num;
+          month = num;
+          day = num;
+          hour = num;
+          minute = num;
+          second = num;
+          hour12 = Js.false_ } ]
+
+    ~locales:["en-CA-u-ca-iso8601"]
+    ()
+
 let view t =
   let open Cycle_dom in
   let comment_id = t |> id |> string_of_int in
 
   h "div" ~attrs:[%bs.obj { key = comment_id } ] [
     h "p.block" [
-      text "2017-01-01T16:01Z ";
-      h "strong" [t |> author |> append_colon |> text];
+      datetime_format
+        |> Intl.Date_time_format.format (timestamp t)
+        |> append " "
+        |> text;
+
+      h "strong" [t |> author |> append ": " |> text];
       t |> msg |> text ];
 
     h "p.control.has-addons" [

@@ -9,5 +9,6 @@ module Date_time_format : sig
   @param options is ignored if `locales` is an empty list.
   *)
   val make : ?options:'a -> ?locales:string list -> unit -> t
+  val format : Js_date.t -> t -> string
 end
 
