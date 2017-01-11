@@ -5,10 +5,10 @@ let main _ =
 
   [%bs.obj
     { dom =
-        Comments.init_comment
+        Comment.init_comment
           |> Xstream.singleton
           |> Xstream.remember
-          |> Memory_stream.map Comments.view } ]
+          |> Memory_stream.map Comment.view } ]
 
 let () =
   let app_id = "app" in
