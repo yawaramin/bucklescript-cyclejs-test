@@ -2,7 +2,8 @@ type vnode
 
 external vnode :
   string Js.undefined ->
-  'a -> (* HTML attrs constructed using custom [%bs.obj { ... } ] *)
+  (* HTML attrs constructed using custom [%bs.obj { ... } ] *)
+  < attrs : 'a > Js.t ->
   vnode array ->
   string Js.undefined ->
   'b Js.undefined ->
@@ -19,7 +20,7 @@ external empty_attr : 'a = "" [@@bs.obj]
 let h sel ?(attrs=empty_attr) children =
   vnode
     (Js.Undefined.return sel)
-    attrs
+    [%bs.obj { attrs } ]
     (Array.of_list children)
     Js.undefined
     Js.undefined
