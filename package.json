@@ -14,7 +14,7 @@
   "dependencies": {
     "@cycle/dom": "^14.3.0",
     "@cycle/xstream-run": "^4.2.0",
-    "bs-platform": "^1.4.0",
+    "bs-platform": "^1.4.1",
     "bulma": "^0.3.0",
     "xstream": "^9.3.0"
   },

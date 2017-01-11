@@ -14,6 +14,5 @@ let () =
   let app_id = "app" in
 
   [%bs.obj { dom = make_dom_driver ("#" ^ app_id) }]
-    |> Cycle_xstream_run.run main
-    |> ignore
+    |> Cycle_xstream_run.run main |> ignore
 
