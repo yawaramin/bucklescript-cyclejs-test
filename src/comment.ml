@@ -51,6 +51,5 @@ let view t =
     h "p.control.has-addons" [
       h ("a#reply-" ^ comment_id ^ ".button.reply") [text "Reply"];
       h ("a#up-" ^ comment_id ^ ".button.up") [text "+1"];
-      h ("a#down-" ^ comment_id ^ ".button.down") [
-        text "-1"] ] ]
+      h ("a#down-" ^ comment_id ^ ".button.down") [text "-1"] ] ]
 

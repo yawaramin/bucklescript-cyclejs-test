@@ -9,8 +9,8 @@ let replies t = t.replies
 let start id author msg = make id author msg
 
 let reply id author msg t =
-  let comment = make id ~reply_to:t.comment author msg in
-  { t with replies = comment :: t.replies }
+  let comment = make id ~reply_to:(comment t) author msg in
+  { t with replies = comment :: replies t }
 
 let init_comment = start Comment.init_id "bob" "Test comment"
 

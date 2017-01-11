@@ -1,6 +1,6 @@
 # BuckleScript/Cycle.js Test Project
 
-## How to Run
+## Development
 
 ### Setup
 
@@ -22,4 +22,10 @@ In another terminal window, run `npm run dev-server` or `yarn run
 dev-server`.
 
 Browse to http://localhost:8080/webpack-dev-server/
+
+## Production
+
+Run `npm run pack` or `yarn run pack`. The output is `build/bundle.js`.
+The static web page is `build/index.html`; open that to check the
+results.
 
