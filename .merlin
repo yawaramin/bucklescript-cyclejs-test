@@ -1,4 +1,5 @@
 B node_modules/bs-platform/lib/ocaml
 S node_modules/bs-platform/lib/ocaml
+S src
+B lib/bs/src
 FLG -ppx node_modules/bs-platform/bin/bsppx.exe
-

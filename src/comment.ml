@@ -9,7 +9,7 @@ type t =
 let incr_id old_id = old_id + 1
 
 let make id ?reply_to ?(replies=[]) author msg =
-  { id; reply_to; replies; timestamp = Js_date.now (); author; msg }
+  { id; reply_to; replies; timestamp = Js_date.make (); author; msg }
 
 let id t = t.id
 let reply_to t = t.reply_to
@@ -17,9 +17,6 @@ let replies t = t.replies
 let timestamp t = t.timestamp
 let author t = t.author
 let msg t = t.msg
-
-let init_comment =
-  make 0 ~replies:[make 1 "jim" "Test reply."] "bob" "Test comment"
 
 let reply t to_t = { to_t with replies = t :: replies to_t }
 let append suffix to_string = to_string ^ suffix
@@ -63,3 +60,5 @@ let rec view t =
     if has_replies t
       then h "ul" (t |> replies |> List.map view) else text "" ]
 
+let init_comment =
+  make 0 ~replies:[make 1 "jim" "Test reply."] "bob" "Test comment"
