@@ -1,5 +1,6 @@
 type t
 
+val ymdhms : int -> int -> int -> int -> int -> int -> t
 val make :
   ?year:int ->
   ?month:int ->

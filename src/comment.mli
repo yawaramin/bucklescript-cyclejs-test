@@ -1,10 +1,7 @@
 type t
 
-val make :
-  int -> ?reply_to:t -> ?replies:t list -> string -> string -> t
-
 val id : t -> int
-val reply_to : t -> t option
+val reply_to : t -> int option
 val replies : t -> t list
 val timestamp : t -> Js_date.t
 val author : t -> string
@@ -20,4 +17,3 @@ Returns a comment with the given reply added.
 *)
 val reply : t -> t -> t
 val view : t -> Cycle_dom.vnode
-
