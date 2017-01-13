@@ -44,16 +44,19 @@ let datetime_format =
     ()
 
 let has_replies t = match replies t with [] -> false | _ -> true
+external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
+
 let rec view t =
   let open Cycle_dom in
+  let _ = style in
   let comment_id = t |> id |> string_of_int in
 
-  h "li.box" ~attrs:[%bs.obj { key = comment_id } ] [
-    h "p.block" [
+  h "li.box.comment" ~attrs:[%bs.obj { key = comment_id } ] [
+    h "span.comment-body" [
       h "strong" [t |> author |> append " " |> text];
-      t |> msg |> text ];
+      t |> msg |> append " " |> text];
 
-    h "p.control.has-addons" [
+    h "span.control.has-addons.comment-actions" [
       h ("a#reply-" ^ comment_id ^ ".button.is-small.reply") [
         text "Reply"];
 
