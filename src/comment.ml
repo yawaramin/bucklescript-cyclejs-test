@@ -45,31 +45,40 @@ let datetime_format =
 
 let has_replies t = match replies t with [] -> false | _ -> true
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
+let num_comments t = Cycle_xstream.singleton 1 |> Cycle_xstream.remember
 
-let rec view t =
+let _ = style
+let view dom t =
   let open Cycle.Dom in
-  let _ = style in
-  let comment_id = t |> id |> string_of_int in
+  let rec aux is_top t =
+    let comment_id = t |> id |> string_of_int in
+    let comment_li =
+      h "li.box.comment" ~attrs:[%bs.obj { key = comment_id } ] [
+        h "span.comment-body" [
+          h "strong" [t |> author |> append " " |> text];
+          t |> msg |> append " " |> text];
 
-  h "li.box.comment" ~attrs:[%bs.obj { key = comment_id } ] [
-    h "span.comment-body" [
-      h "strong" [t |> author |> append " " |> text];
-      t |> msg |> append " " |> text];
+        h "span.control.has-addons.comment-actions" [
+          h ("a#reply-" ^ comment_id ^ ".button.is-small.reply") [
+            text "Reply" ];
 
-    h "span.control.has-addons.comment-actions" [
-      h ("a#reply-" ^ comment_id ^ ".button.is-small.reply") [
-        text "Reply"];
+          h ("a#up-" ^ comment_id ^ ".button.is-small.up") [text "+1"];
+          h ("a#down-" ^ comment_id ^ ".button.is-small.down") [
+            text "-1" ];
 
-      h ("a#up-" ^ comment_id ^ ".button.is-small.up") [text "+1"];
-      h ("a#down-" ^ comment_id ^ ".button.is-small.down") [text "-1"];
-      h "span.button.is-small.is-disabled" [
-        datetime_format
-          |> Intl.Date_time_format.format (timestamp t)
-          |> append " "
-          |> text ] ];
+          h "span.button.is-small.is-disabled" [
+            datetime_format
+              |> Intl.Date_time_format.format (timestamp t)
+              |> append " "
+              |> text ] ];
 
-    if has_replies t
-      then h "ul" (t |> replies |> List.map view) else text "" ]
+        if has_replies t
+          then h "ul" (t |> replies |> List.map (aux false))
+          else text "" ] in
+
+    if is_top then h "ul" [comment_li] else comment_li in
+
+  aux true t
 
 let init_comment =
   let c id timestamp ?reply_to author msg replies =

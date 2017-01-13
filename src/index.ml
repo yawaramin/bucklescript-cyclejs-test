@@ -1,12 +1,12 @@
-let main _ =
+let main sources =
   let _ = Bulma.bulma in
 
   [%bs.obj
     { dom =
         Comment.init_comment
-          |> Xstream.singleton
-          |> Xstream.remember
-          |> Memory_stream.map Comment.view } ]
+          |> Cycle_xstream.singleton
+          |> Cycle_xstream.remember
+          |> Memory_stream.map (Comment.view sources##dom) } ]
 
 let () =
   let app_id = "app" in

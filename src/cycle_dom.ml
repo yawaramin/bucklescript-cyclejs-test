@@ -10,7 +10,7 @@ external vnode :
   vnode =
   "snabbdom/vnode" [@@bs.module]
 
-type ('a, 'b) dom_driver = vnode Xstream.t -> 'a -> string -> 'b
+type ('a, 'b) dom_driver = vnode Cycle_xstream.t -> 'a -> string -> 'b
 
 external make_dom_driver : string -> ('b, 'c) dom_driver =
   "makeDOMDriver" [@@bs.module "@cycle/dom"]

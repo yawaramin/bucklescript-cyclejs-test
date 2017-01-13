@@ -20,4 +20,3 @@ external fold : ('b -> 'a -> 'b) -> 'b -> 'b t =
   "" [@@bs.send.pipe: 'a t]
 
 external remember : 'a t -> 'a Memory_stream.t = "" [@@bs.send]
-
