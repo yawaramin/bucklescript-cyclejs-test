@@ -33,3 +33,5 @@ let text string =
     (Js.Undefined.return string)
     Js.undefined
 
+module Source = Cycle_dom_source
+

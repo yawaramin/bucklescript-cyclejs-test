@@ -16,4 +16,5 @@ Returns a comment with the given reply added.
 @param to_t the parent comment to reply to.
 *)
 val reply : t -> t -> t
-val view : t -> Cycle_dom.vnode
+val view : t -> Cycle.Dom.vnode
+

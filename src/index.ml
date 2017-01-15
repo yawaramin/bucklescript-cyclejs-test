@@ -1,5 +1,3 @@
-open Cycle_dom
-
 let main _ =
   let _ = Bulma.bulma in
 
@@ -13,6 +11,6 @@ let main _ =
 let () =
   let app_id = "app" in
 
-  [%bs.obj { dom = make_dom_driver ("#" ^ app_id) }]
-    |> Cycle_xstream_run.run main |> ignore
+  [%bs.obj { dom = Cycle.Dom.make_dom_driver ("#" ^ app_id) }]
+    |> Cycle.Xstream_run.run main |> ignore
 

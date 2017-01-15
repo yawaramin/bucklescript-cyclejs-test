@@ -47,7 +47,7 @@ let has_replies t = match replies t with [] -> false | _ -> true
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
 
 let rec view t =
-  let open Cycle_dom in
+  let open Cycle.Dom in
   let _ = style in
   let comment_id = t |> id |> string_of_int in
 
