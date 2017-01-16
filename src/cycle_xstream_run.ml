@@ -8,3 +8,4 @@ external cycle_xstream_run :
   "@cycle/xstream-run" [@@bs.module]
 
 let run main drivers = cycle_xstream_run##run main drivers
+

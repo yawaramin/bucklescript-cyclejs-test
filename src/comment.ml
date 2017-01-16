@@ -6,6 +6,12 @@ type t =
     author : string;
     msg : string }
 
+type ('a, 'b) sources = < dom : ('a, 'b) Cycle.Dom.Source.t > Js.t
+type sinks =
+  < dom : Cycle.Dom.vnode Memory_stream.t;
+    numComments : int Memory_stream.t;
+    comments : t Memory_stream.t > Js.t
+
 let incr_id old_id = old_id + 1
 
 let make
@@ -43,13 +49,12 @@ let datetime_format =
     ~locales:["en-CA-u-ca-iso8601"]
     ()
 
-let has_replies t = match replies t with [] -> false | _ -> true
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
-let num_comments t = Cycle_xstream.singleton 1 |> Cycle_xstream.remember
+let has_replies t = match replies t with [] -> false | _ -> true
 
-let _ = style
-let view dom t =
+let view t =
   let open Cycle.Dom in
+  let _ = style in
   let rec aux is_top t =
     let comment_id = t |> id |> string_of_int in
     let comment_li =
@@ -129,3 +134,15 @@ This code is for Google to move away from python. They can include python librar
             "MightyCreak"
             "Does this mean that you can't interpret two Python scripts at the same time because of GIL, but once interpreted, they can run in parallel?"
             [] ] ]
+
+let main sources =
+  let memory_stream x =
+    x |> Cycle_xstream.singleton |> Cycle_xstream.remember in
+
+  let comments = memory_stream init_comment in
+
+  [%bs.obj
+    { dom = Memory_stream.map view comments;
+      numComments = memory_stream 1;
+      comments } ]
+

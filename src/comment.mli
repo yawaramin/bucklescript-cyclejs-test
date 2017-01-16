@@ -1,4 +1,9 @@
 type t
+type ('a, 'b) sources = < dom : ('a, 'b) Cycle.Dom.Source.t > Js.t
+type sinks =
+  < dom : Cycle.Dom.vnode Memory_stream.t;
+    numComments : int Memory_stream.t;
+    comments : t Memory_stream.t > Js.t
 
 val id : t -> int
 val reply_to : t -> int option
@@ -7,14 +12,5 @@ val timestamp : t -> Js_date.t
 val author : t -> string
 val msg : t -> string
 
-val init_comment : t
-
-(**
-Returns a comment with the given reply added.
-
-@param    t the reply to add.
-@param to_t the parent comment to reply to.
-*)
-val reply : t -> t -> t
-val view : ('a, 'b) Cycle.Dom.Source.t -> t -> Cycle.Dom.vnode
+val main : ('a, 'b) sources -> sinks
 
