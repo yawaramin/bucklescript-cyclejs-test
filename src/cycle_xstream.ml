@@ -14,9 +14,13 @@ let periodic period = xstream##default##periodic period
 let of_array array = xstream##default##fromArray array
 let singleton x = of_array [|x|]
 
+external combine2 : 'a t -> 'b t -> ('a * 'b) t =
+  "" [@@bs.module "./xstream_combine", "Xstream_combine"]
+
 external map : ('a -> 'b) -> 'b t = "" [@@bs.send.pipe: 'a t]
 external map_to : 'b -> 'b t = "mapTo" [@@bs.send.pipe: 'a t]
 external fold : ('b -> 'a -> 'b) -> 'b -> 'b t =
   "" [@@bs.send.pipe: 'a t]
 
 external remember : 'a t -> 'a Memory_stream.t = "" [@@bs.send]
+

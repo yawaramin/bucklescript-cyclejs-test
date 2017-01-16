@@ -20,7 +20,7 @@
   },
   "scripts": {
     "dev-server": "webpack-dev-server --progress --colors --content-base build/",
-    "pack": "webpack -p",
+    "pack": "webpack",
     "compile": "bsb -bin-annot",
     "build": "bsb && yarn run pack",
     "watch": "bsb -w -bin-annot"

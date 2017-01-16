@@ -1,9 +1,9 @@
 type t
-type ('a, 'b) sources = < dom : ('a, 'b) Cycle.Dom.Source.t > Js.t
+type ('a, 'b) sources = < _DOM : ('a, 'b) Cycle.Dom.Source.t > Js.t
 type sinks =
-  < dom : Cycle.Dom.vnode Memory_stream.t;
-    numComments : int Memory_stream.t;
-    comments : t Memory_stream.t > Js.t
+  < _DOM : Cycle.Dom.vnode Cycle_xstream.t;
+    numComments : int Cycle_xstream.t;
+    comments : t Cycle_xstream.t > Js.t
 
 val id : t -> int
 val reply_to : t -> int option

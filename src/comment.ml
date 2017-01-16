@@ -6,11 +6,11 @@ type t =
     author : string;
     msg : string }
 
-type ('a, 'b) sources = < dom : ('a, 'b) Cycle.Dom.Source.t > Js.t
+type ('a, 'b) sources = < _DOM : ('a, 'b) Cycle.Dom.Source.t > Js.t
 type sinks =
-  < dom : Cycle.Dom.vnode Memory_stream.t;
-    numComments : int Memory_stream.t;
-    comments : t Memory_stream.t > Js.t
+  < _DOM : Cycle.Dom.vnode Cycle_xstream.t;
+    numComments : int Cycle_xstream.t;
+    comments : t Cycle_xstream.t > Js.t
 
 let incr_id old_id = old_id + 1
 
@@ -49,11 +49,18 @@ let datetime_format =
     ~locales:["en-CA-u-ca-iso8601"]
     ()
 
+let num_comments dom =
+  let open Cycle.Dom.Source in
+  let comments = dom |> select ".comment" |> elements in
+
+  comments |> Cycle_xstream.map Array.length
+
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
 let has_replies t = match replies t with [] -> false | _ -> true
 
-let view t =
+let view num_comments t =
   let open Cycle.Dom in
+
   let _ = style in
   let rec aux is_top t =
     let comment_id = t |> id |> string_of_int in
@@ -81,7 +88,18 @@ let view t =
           then h "ul" (t |> replies |> List.map (aux false))
           else text "" ] in
 
-    if is_top then h "ul" [comment_li] else comment_li in
+    if is_top
+      then
+        let num_comments_li =
+          h "li.box" [
+            text
+              ("Showing " ^
+              string_of_int num_comments ^
+              " comments.") ] in
+
+        h "ul" [num_comments_li; comment_li]
+
+      else comment_li in
 
   aux true t
 
@@ -136,13 +154,15 @@ This code is for Google to move away from python. They can include python librar
             [] ] ]
 
 let main sources =
-  let memory_stream x =
-    x |> Cycle_xstream.singleton |> Cycle_xstream.remember in
-
-  let comments = memory_stream init_comment in
+  let comments = Cycle_xstream.singleton init_comment in
+  let numComments = num_comments sources##_DOM in
 
   [%bs.obj
-    { dom = Memory_stream.map view comments;
-      numComments = memory_stream 1;
+    { _DOM =
+        Cycle_xstream.(
+          comments
+            |> combine2 numComments |> map (fun (a, b) -> view a b));
+
+      numComments;
       comments } ]
 
