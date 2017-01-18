@@ -8,9 +8,9 @@ type t =
 
 type ('a, 'b) sources = < _DOM : ('a, 'b) Cycle.Dom.Source.t > Js.t
 type sinks =
-  < _DOM : Cycle.Dom.vnode Cycle_xstream.t;
-    numComments : int Cycle_xstream.t;
-    comments : t Cycle_xstream.t > Js.t
+  < _DOM : Cycle.Dom.vnode Cycle_xstream.memory_t;
+    numComments : int Cycle_xstream.memory_t;
+    comments : t Cycle_xstream.memory_t > Js.t
 
 let incr_id old_id = old_id + 1
 
@@ -53,12 +53,13 @@ let num_comments dom =
   let open Cycle.Dom.Source in
   let comments = dom |> select ".comment" |> elements in
 
-  comments |> Cycle_xstream.map Array.length
+  comments
+    |> Cycle_xstream.map Array.length |> Cycle_xstream.start_with 7
 
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
 let has_replies t = match replies t with [] -> false | _ -> true
 
-let view num_comments t =
+let view (num_comments, t) =
   let open Cycle.Dom in
 
   let _ = style in
@@ -159,9 +160,7 @@ let main sources =
 
   [%bs.obj
     { _DOM =
-        Cycle_xstream.(
-          comments
-            |> combine2 numComments |> map (fun (a, b) -> view a b));
+        Cycle_xstream.(comments |> combine2 numComments |> map view);
 
       numComments;
       comments } ]
