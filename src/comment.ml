@@ -155,13 +155,11 @@ This code is for Google to move away from python. They can include python librar
             [] ] ]
 
 let main sources =
-  let comments = Cycle_xstream.singleton init_comment in
   let numComments = num_comments sources##_DOM in
+  let comments = Cycle_xstream.(periodic 1000 |> map_to init_comment) in
 
   [%bs.obj
-    { _DOM =
-        Cycle_xstream.(comments |> combine2 numComments |> map view);
-
+    { _DOM = Cycle_xstream.(map view (combine2 numComments comments));
       numComments;
       comments } ]
 
