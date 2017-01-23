@@ -8,9 +8,9 @@ type t =
 
 type ('a, 'b) sources = < _DOM : ('a, 'b) Cycle.Dom.Source.t > Js.t
 type sinks =
-  < _DOM : Cycle.Dom.vnode Cycle_xstream.memory_t;
-    numComments : int Cycle_xstream.memory_t;
-    comments : t Cycle_xstream.memory_t > Js.t
+  < _DOM : Cycle.Dom.vnode Cycle_xstream.base_t;
+    numComments : int Cycle_xstream.base_t;
+    comments : t Cycle_xstream.base_t > Js.t
 
 let incr_id old_id = old_id + 1
 
@@ -53,8 +53,7 @@ let num_comments dom =
   let open Cycle.Dom.Source in
   let comments = dom |> select ".comment" |> elements in
 
-  comments
-    |> Cycle_xstream.map Array.length |> Cycle_xstream.start_with 7
+  Cycle_xstream.map Array.length comments
 
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
 let has_replies t = match replies t with [] -> false | _ -> true
@@ -155,11 +154,11 @@ This code is for Google to move away from python. They can include python librar
             [] ] ]
 
 let main sources =
-  let numComments = num_comments sources##_DOM in
-  let comments = Cycle_xstream.(periodic 1000 |> map_to init_comment) in
+  let open Cycle_xstream in
 
-  [%bs.obj
-    { _DOM = Cycle_xstream.(map view (combine2 numComments comments));
-      numComments;
-      comments } ]
+  let numComments = num_comments sources##_DOM in
+  let comments = periodic 1_000 |> map_to init_comment in
+  let model = combine2 numComments comments in
+
+  [%bs.obj { _DOM = map view model; numComments; comments } ]
 

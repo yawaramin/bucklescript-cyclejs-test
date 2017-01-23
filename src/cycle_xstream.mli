@@ -6,9 +6,20 @@ type 'a memory_t = (memory, 'a) t
 
 val periodic : int -> ('t, int) t
 val singleton : 'a -> ('t, 'a) t
-val combine2 : ('t, 'a) t -> ('t, 'b) t -> ('t, ('a * 'b)) t
-val map : ('a -> 'b) -> ('t, 'a) t -> ('t, 'b) t
-val map_to : 'b -> ('t, 'a) t -> ('t, 'b) t
-val remember : 'a base_t -> 'a memory_t
-val start_with : 'a -> 'a base_t -> 'a memory_t
+
+external combine2 : ('t, 'a) t -> ('t, 'b) t -> ('t, ('a * 'b)) t =
+  "" [@@bs.module "./xstream_combine", "Xstream_combine"]
+
+external map : ('a -> 'b) -> ('t, 'b) t =
+  "" [@@bs.send.pipe: ('t, 'a) t]
+
+external map_to : 'b -> ('t, 'b) t =
+  "mapTo" [@@bs.send.pipe: ('t, 'a) t]
+
+external fold : ('b -> 'a -> 'b) -> 'b -> ('t, 'b) t =
+  "" [@@bs.send.pipe: ('t, 'a) t]
+
+external remember : 'a base_t -> 'a memory_t = "" [@@bs.send]
+external start_with : 'a -> 'a memory_t =
+  "startWith" [@@bs.send.pipe: 'a base_t]
 
