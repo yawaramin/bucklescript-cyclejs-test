@@ -1,37 +1,27 @@
-type t =
-  { id : int;
-    reply_to : int option;
-    replies : t list;
-    timestamp : Js_date.t;
+module Comment_id = Id
+module Ct = Map_tree
+module Ds = Cycle.Dom.Source
+module Xs = Cycle_xstream
+
+type comment =
+  { id : Comment_id.t;
     author : string;
-    msg : string }
+    msg : string;
+    timestamp : Js_date.t option }
 
-type ('a, 'b) sources = < _DOM : ('a, 'b) Cycle.Dom.Source.t > Js.t
+(** A pair of the next comment ID and a comment tree. *)
+type t = Comment_id.t * comment Ct.t
+type action =
+  | Start_reply_to of Comment_id.t * string
+  | Save_reply of Comment_id.t
+  | Cancel_reply of Comment_id.t
+  | Edit_reply of Comment_id.t * string
+
+type sources = < _DOM : Cycle.Dom.Source.t > Js.t
 type sinks =
-  < _DOM : Cycle.Dom.vnode Cycle_xstream.base_t;
-    numComments : int Cycle_xstream.base_t;
-    comments : t Cycle_xstream.base_t > Js.t
+  < _DOM : Cycle.Dom.vnode Cycle_xstream.memory_t;
+    comments : comment Ct.t Cycle_xstream.memory_t > Js.t
 
-let incr_id old_id = old_id + 1
-
-let make
-  id
-  ?reply_to
-  ?(replies=[])
-  ?(timestamp = Js_date.make ())
-  author
-  msg =
-  { id; reply_to; replies; timestamp; author; msg }
-
-let id t = t.id
-let reply_to t = t.reply_to
-let replies t = t.replies
-let timestamp t = t.timestamp
-let author t = t.author
-let msg t = t.msg
-
-let reply t to_t = { to_t with replies = t :: replies to_t }
-let append suffix to_string = to_string ^ suffix
 let datetime_format =
   let num = "numeric" in
 
@@ -49,116 +39,181 @@ let datetime_format =
     ~locales:["en-CA-u-ca-iso8601"]
     ()
 
-let num_comments dom =
-  let open Cycle.Dom.Source in
-  let comments = dom |> select ".comment" |> elements in
-
-  Cycle_xstream.map Array.length comments
-
 external style : 'a = "style!../../css/src/comment.css" [@@bs.module]
-let has_replies t = match replies t with [] -> false | _ -> true
 
-let view (num_comments, t) =
-  let open Cycle.Dom in
+let _ = style
+let append suffix to_string = to_string ^ suffix
+let edit_reply_tag = "edit-reply"
+let start_reply_tag = "start-reply"
+let cancel_reply_tag = "cancel-reply"
+let save_reply_tag = "save-reply"
+let view =
+  let ul_wrapper (_, comment_tree) =
+    let open Cycle.Dom in
 
-  let _ = style in
-  let rec aux is_top t =
-    let comment_id = t |> id |> string_of_int in
-    let comment_li =
-      h "li.box.comment" ~attrs:[%bs.obj { key = comment_id } ] [
-        h "span.comment-body" [
-          h "strong" [t |> author |> append " " |> text];
-          t |> msg |> append " " |> text];
+    let rec comment_view comment =
+      let id = Comment_id.to_int comment.id in
+      let id_str = string_of_int id in
 
-        h "span.control.has-addons.comment-actions" [
-          h ("a#reply-" ^ comment_id ^ ".button.is-small.reply") [
-            text "Reply" ];
+      match comment.timestamp with
+        | Some ts -> (* This is a saved comment. *)
+          h "li.box.comment" ~attrs:[%bs.obj { key = id_str } ] [
+            h "span.comment-body" [
+              h "strong" [comment.author |> append " " |> text];
+              comment.msg |> append " " |> text ];
 
-          h ("a#up-" ^ comment_id ^ ".button.is-small.up") [text "+1"];
-          h ("a#down-" ^ comment_id ^ ".button.is-small.down") [
-            text "-1" ];
+            h "span.control.has-addons.comment-actions" [
+              h (Printf.sprintf
+                  "a#%s-%s.button.is-small.%s"
+                  start_reply_tag id_str start_reply_tag) [
+                text "Reply" ];
 
-          h "span.button.is-small.is-disabled" [
-            datetime_format
-              |> Intl.Date_time_format.format (timestamp t)
-              |> append " "
-              |> text ] ];
+              h ("a#up-" ^ id_str ^ ".button.is-small.up") [
+                text "+1" ];
 
-        if has_replies t
-          then h "ul" (t |> replies |> List.map (aux false))
-          else text "" ] in
+              h ("a#down-" ^ id_str ^ ".button.is-small.down") [
+                text "-1" ];
 
-    if is_top
-      then
-        let num_comments_li =
-          h "li.box" [
-            text
-              ("Showing " ^
-              string_of_int num_comments ^
-              " comments.") ] in
+              h "span.button.is-small.is-disabled" [
+                datetime_format
+                  |> Intl.Date_time_format.format ts
+                  |> append " "
+                  |> text ] ];
 
-        h "ul" [num_comments_li; comment_li]
+              match Ct.children id comment_tree with
+                | [] -> text ""
+                | replies -> h "ul" (List.map comment_view replies) ]
 
-      else comment_li in
+        (*
+        This is an unsaved comment, i.e. it's currently being edited.
+        *)
+        | None ->
+          h "li.box.comment" ~attrs:[%bs.obj { key = id_str } ] [
+            h "p.control.comment-body" [
+              h (Printf.sprintf
+                  "input#%s-%s.input.%s"
+                  edit_reply_tag
+                  id_str
+                  edit_reply_tag)
 
-  aux true t
+                ~attrs:[%bs.obj { _type = "text" } ] [] ];
 
-let init_comment =
-  let c id timestamp ?reply_to author msg replies =
-    make id ?reply_to ~replies ~timestamp author msg in
+            h "p.control.has-addons.comment-actions" [
+              h (Printf.sprintf
+                  "a#%s-%s.button.is-small.%s"
+                  save_reply_tag
+                  id_str
+                  save_reply_tag) [
+                text "Send"];
 
-  c 0
-    (Js_date.ymdhms 2017 0 4 21 8 57)
-    "semi_colon"
-    "As someone who doesn't use Go or Python: what is the use for this?"
-    [ c 1
-        (Js_date.ymdhms 2017 0 4 21 23 20)
-        ~reply_to:0
-        "vplatt"
-        "To run Python code as a Go compiled executable. This allows them to avoid the Python Global Interpreter Lock (which severely limits Python\'s scalability within a single process) and run the Python code using Go modules as if they were Python modules.
+              h (Printf.sprintf
+                  "a#%s-%s.button.is-small.%s"
+                  cancel_reply_tag
+                  id_str
+                  cancel_reply_tag) [
+                text "Cancel"] ] ] in
 
-Really, unless you're Google or another Python shop interesting in moving to Go, you probably don't have a use for this."
-        [ c 2
-            (Js_date.ymdhms 2017 0 4 22 40 49)
-            ~reply_to:1
-            "semi_colon"
-            "Thanks, great explanation."
-            [];
+    comment_tree
+      |> Ct.roots |> List.map comment_view |> h "ul" in
 
-          c 3
-            (Js_date.ymdhms 2017 0 4 23 22 24)
-            ~reply_to:1
-            "VodkaHaze"
-            "Getting around the GIL is a huge step. Python's chief weakness is lack of parallel scalability, IMO. Most solutions around this (joblib, dask, etc.) don't feel like complete solutions. Not when, for example, in C++ or Julia you can slap a macro above a loop to make it instantly parallel."
-            [ c 4
-                (Js_date.ymdhms 2017 0 4 23 32 58)
-                ~reply_to:3
-                "CSI_Tech_Dept"
-                "It doesn't need GIL, because it offers subset of functionality that python has. It is not even capable of compiling all python standard library.
+  Xs.map ul_wrapper
 
-This code is for Google to move away from python. They can include python libraries in their go code and then one by one rewrite it in go."
-                [];
+let author = "bob"
+let actions dom =
+  let elem_tag_id id_tag id_str =
+    let id_tag_len = String.length id_tag in
+    let id_str_len = String.length id_str in
 
-              c 5
-                (Js_date.ymdhms 2017 0 4 23 32 18)
-                ~reply_to:3
-                "theseoafs"
-                "For the record, this is not a complete solution either. Grumpy is a tool that compiles a single Python file (no real module support) while eschewing most of Python's dynamic features and supporting very little of its standard library."
-                [] ];
+    (id_str_len - id_tag_len - 1)
+      |> String.sub id_str (id_tag_len + 1)
+      |> int_of_string
+      |> Comment_id.of_int in
 
-          c 6
-            (Js_date.ymdhms 2017 0 4 23 31 47)
-            ~reply_to:1
-            "MightyCreak"
-            "Does this mean that you can't interpret two Python scripts at the same time because of GIL, but once interpreted, they can run in parallel?"
-            [] ] ]
+  let clicked_tagged_ids id_tag =
+    dom
+      |> Ds.select ("." ^ id_tag)
+      |> Ds.events "click"
+      |> Xs.map (fun e ->
+        let open Web in
+
+        e |> Event.target
+          |> Node.of_event_target
+          |> Element.of_node
+          |> Element.id
+          |> elem_tag_id id_tag) in
+
+  Xs.merge4
+    (clicked_tagged_ids start_reply_tag
+      |> Xs.map (fun i -> Start_reply_to (i, author)))
+
+    (clicked_tagged_ids cancel_reply_tag
+      |> Xs.map (fun i -> Cancel_reply i))
+
+    (clicked_tagged_ids save_reply_tag
+      |> Xs.map (fun i -> Save_reply i))
+
+    (dom
+      |> Ds.select ("." ^ edit_reply_tag)
+      |> Ds.events "input"
+      |> Xs.map (fun e ->
+        let open Web in
+
+        let elem =
+          e |> Event.target
+            |> Node.of_event_target
+            |> Element.of_node in
+
+        let elem_id =
+          elem |> Element.id |> elem_tag_id edit_reply_tag in
+
+        let value =
+          elem
+            |> Html_element.of_element
+            |> Html_input_element.of_html_element
+            |> Html_input_element.value in
+
+        Edit_reply (elem_id, value)))
+
+let start_reply_to parent_id author (next_id, comment_tree) =
+  let reply = { id = next_id; author; msg = ""; timestamp = None } in
+
+  Comment_id.incr next_id,
+  Ct.add ~parent_id (Comment_id.to_int next_id) reply comment_tree
+
+let save_reply id (next_id, comment_tree) =
+  let stamp_time c = { c with timestamp = Some (Js_date.now ()) } in
+  next_id, Ct.update id stamp_time comment_tree
+
+let cancel_reply id (next_id, comment_tree) =
+  next_id, Ct.remove id comment_tree
+
+let edit_reply id msg (next_id, comment_tree) =
+  let with_msg c = { c with msg } in
+  next_id, Ct.update id with_msg comment_tree
+
+let model =
+  let init_id = 1 in
+  let init_comment_id = Comment_id.of_int init_id in
+  let init_comment =
+    { id = init_comment_id;
+      author;
+      msg = "Hello, World!";
+      timestamp = Some (Js_date.now ()) } in
+
+  let init_comment_tree = Ct.empty |> Ct.add init_id init_comment in
+  let update t = function
+    | Start_reply_to (id, author) ->
+      start_reply_to (Comment_id.to_int id) author t
+
+    | Save_reply id -> save_reply (Comment_id.to_int id) t
+    | Cancel_reply id -> cancel_reply (Comment_id.to_int id) t
+    | Edit_reply (id, msg) -> edit_reply (Comment_id.to_int id) msg t in
+
+  let init_model = Comment_id.incr init_comment_id, init_comment_tree in
+
+  Xs.fold update init_model
 
 let main sources =
-  let open Cycle_xstream in
-
-  let numComments = num_comments sources##_DOM in
-  let comments = periodic 1_000 |> map_to init_comment in
-  let model = combine2 numComments comments in
-
-  [%bs.obj { _DOM = map view model; numComments; comments } ]
+  let model' = sources##_DOM |> actions |> model in
+  [%bs.obj { _DOM = view model'; comments = Xs.map snd model' } ]
 
