@@ -63,22 +63,22 @@ let view =
               comment.msg |> append " " |> text ];
 
             h "span.control.has-addons.comment-actions" [
-              h (Printf.sprintf
-                  "a#%s-%s.button.is-small.%s"
-                  start_reply_tag id_str start_reply_tag) [
-                text "Reply" ];
-
-              h ("a#up-" ^ id_str ^ ".button.is-small.up") [
+              h ("button#up-" ^ id_str ^ ".button.is-small.up") [
                 text "+1" ];
 
-              h ("a#down-" ^ id_str ^ ".button.is-small.down") [
+              h ("button#down-" ^ id_str ^ ".button.is-small.down") [
                 text "-1" ];
 
               h "span.button.is-small.is-disabled" [
                 datetime_format
                   |> Intl.Date_time_format.format ts
                   |> append " "
-                  |> text ] ];
+                  |> text ];
+
+              h (Printf.sprintf
+                  "button#%s-%s.button.is-small.%s"
+                  start_reply_tag id_str start_reply_tag) [
+                text "Reply" ] ];
 
               match Ct.children id comment_tree with
                 | [] -> text ""
@@ -91,7 +91,7 @@ let view =
           h "li.box.comment" ~attrs:[%bs.obj { key = id_str } ] [
             h "p.control.comment-body" [
               h (Printf.sprintf
-                  "input#%s-%s.input.%s"
+                  "textarea#%s-%s.textarea.%s"
                   edit_reply_tag
                   id_str
                   edit_reply_tag)
@@ -100,14 +100,14 @@ let view =
 
             h "p.control.has-addons.comment-actions" [
               h (Printf.sprintf
-                  "a#%s-%s.button.is-small.%s"
+                  "button#%s-%s.button.is-small.%s"
                   save_reply_tag
                   id_str
                   save_reply_tag) [
                 text "Send"];
 
               h (Printf.sprintf
-                  "a#%s-%s.button.is-small.%s"
+                  "button#%s-%s.button.is-small.%s"
                   cancel_reply_tag
                   id_str
                   cancel_reply_tag) [
@@ -169,8 +169,8 @@ let actions dom =
         let value =
           elem
             |> Html_element.of_element
-            |> Html_input_element.of_html_element
-            |> Html_input_element.value in
+            |> Html_textarea_element.of_html_element
+            |> Html_textarea_element.value in
 
         Edit_reply (elem_id, value)))
 
