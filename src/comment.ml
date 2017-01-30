@@ -23,18 +23,17 @@ type sinks =
     comments : comment Ct.t Cycle_xstream.memory_t > Js.t
 
 let datetime_format =
-  let num = "numeric" in
-
   Intl.Date_time_format.make
     ~options:
-      [%bs.obj
-        { year = num;
-          month = num;
-          day = num;
-          hour = num;
-          minute = num;
-          second = num;
-          hour12 = Js.false_ } ]
+      (Intl.Date_time_format.Options.make
+        ~year:`numeric
+        ~month:`numeric
+        ~day:`numeric
+        ~hour:`numeric
+        ~minute:`numeric
+        ~second:`numeric
+        ~hour12:false
+        ())
 
     ~locales:["en-CA-u-ca-iso8601"]
     ()
