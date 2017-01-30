@@ -10,7 +10,7 @@ exception Id_zero_invalid
 
 let empty = Coords_map.empty
 let add ?(parent_id=0) id a t =
-  if id = 0 then raise Id_zero_invalid; 
+  if id = 0 then raise Id_zero_invalid;
   Coords_map.add (parent_id, id) a t
 
 let children_bindings id t =
@@ -19,8 +19,15 @@ let children_bindings id t =
 let children id t = t |> children_bindings id |> List.map snd
 let roots t = children 0 t
 let parent id t =
-  Coords_map.(t |> filter (fun (_, i) _ -> i = id) |> choose)
-    |> fst |> fst
+  let not_found = -1 in
+  let result = ref not_found in
+  let store_parent_id (p, i) _ =
+    if i = id then (result := p; true) else false in
+
+  t |> Coords_map.exists store_parent_id |> ignore;
+
+  let result = !result in
+  if result = not_found then raise Not_found else result
 
 let rec remove id t =
   let remove_id t id = remove id t in
