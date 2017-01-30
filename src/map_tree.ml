@@ -19,15 +19,12 @@ let children_bindings id t =
 let children id t = t |> children_bindings id |> List.map snd
 let roots t = children 0 t
 let parent id t =
-  let not_found = -1 in
-  let result = ref not_found in
+  let result = ref None in
   let store_parent_id (p, i) _ =
-    if i = id then (result := p; true) else false in
+    if i = id then (result := Some p; true) else false in
 
   t |> Coords_map.exists store_parent_id |> ignore;
-
-  let result = !result in
-  if result = not_found then raise Not_found else result
+  match !result with Some r -> r | None -> raise Not_found
 
 let rec remove id t =
   let remove_id t id = remove id t in
