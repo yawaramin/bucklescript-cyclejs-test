@@ -2,6 +2,7 @@ type 'a t
 exception Id_zero_invalid
 
 val empty : 'a t
+val add : ?parent_id:int -> int -> 'a -> 'a t -> 'a t
 
 (**
 `add ~parent_id:pid id a t` returns a new tree with the node `a` added
@@ -11,16 +12,24 @@ node.
 
 Raises exception `Id_zero_invalid` if `id` is 0.
 *)
-val add : ?parent_id:int -> int -> 'a -> 'a t -> 'a t
+
 val children : int -> 'a t -> 'a list
+
+(**
+`children id t` returns a list of all children of a node with ID `id`.
+If there are no children, it returns an empty list.
+*)
+
 val roots : 'a t -> 'a list
+val remove : int -> 'a t -> 'a t
 
 (**
 `remove id t` removes not just the element with ID `id` from the tree
 `t` but all its children, recursively, and returns an updated tree.
 Not tail-recursive.
 *)
-val remove : int -> 'a t -> 'a t
+
+val graft : ?parent_id:int -> int -> 'a t -> 'a t
 
 (**
 `graft ~parent_id:pid id t` returns a new tree with the node with ID
@@ -28,7 +37,8 @@ val remove : int -> 'a t -> 'a t
 the node with ID `pid`. If `parent_id` isn't specified, the grafted node
 is made a root node.
 *)
-val graft : ?parent_id:int -> int -> 'a t -> 'a t
+
+val update : int -> ('a -> 'a) -> 'a t -> 'a t
 
 (**
 `update id f t` returns a new tree with the update function `f`
@@ -37,5 +47,4 @@ doesn't know if you change the element's ID or parent ID in the update
 function, so that has no effect. If you want to move an element (and its
 subtree) to a new place in the tree, use `graft`.
 *)
-val update : int -> ('a -> 'a) -> 'a t -> 'a t
 

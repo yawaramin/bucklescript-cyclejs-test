@@ -174,23 +174,8 @@ let actions dom =
 
         Edit_reply (elem_id, value)))
 
-let start_reply_to parent_id author (next_id, comment_tree) =
-  let reply = { id = next_id; author; msg = ""; timestamp = None } in
-
-  Comment_id.incr next_id,
-  Ct.add ~parent_id (Comment_id.to_int next_id) reply comment_tree
-
-let save_reply id (next_id, comment_tree) =
-  let stamp_time c = { c with timestamp = Some (Js_date.now ()) } in
-  next_id, Ct.update id stamp_time comment_tree
-
-let cancel_reply id (next_id, comment_tree) =
-  next_id, Ct.remove id comment_tree
-
-let edit_reply id msg (next_id, comment_tree) =
-  let with_msg c = { c with msg } in
-  next_id, Ct.update id with_msg comment_tree
-
+let stamp_time c = { c with timestamp = Some (Js_date.now ()) }
+let with_msg msg c = { c with msg }
 let model =
   let init_id = 1 in
   let init_comment_id = Comment_id.of_int init_id in
@@ -201,13 +186,25 @@ let model =
       timestamp = Some (Js_date.now ()) } in
 
   let init_comment_tree = Ct.empty |> Ct.add init_id init_comment in
-  let update t = function
+  let update (next_id, comment_tree) = function
     | Start_reply_to (id, author) ->
-      start_reply_to (Comment_id.to_int id) author t
+      let parent_id = Comment_id.to_int id in
+      let reply =
+        { id = next_id; author; msg = ""; timestamp = None } in
 
-    | Save_reply id -> save_reply (Comment_id.to_int id) t
-    | Cancel_reply id -> cancel_reply (Comment_id.to_int id) t
-    | Edit_reply (id, msg) -> edit_reply (Comment_id.to_int id) msg t in
+      Comment_id.incr next_id,
+      Ct.add ~parent_id (Comment_id.to_int next_id) reply comment_tree
+
+    | Save_reply id ->
+      next_id,
+      Ct.update (Comment_id.to_int id) stamp_time comment_tree
+
+    | Cancel_reply id ->
+      next_id, Ct.remove (Comment_id.to_int id) comment_tree
+
+    | Edit_reply (id, msg) ->
+      next_id,
+      Ct.update (Comment_id.to_int id) (with_msg msg) comment_tree in
 
   let init_model = Comment_id.incr init_comment_id, init_comment_tree in
 

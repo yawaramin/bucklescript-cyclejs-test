@@ -6,6 +6,7 @@
   "author": "Yawar Amin <yawar.amin@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "bs-platform": "^1.4.2",
     "css-loader": "^0.26.1",
     "style-loader": "^0.13.1",
     "webpack": "1.14.0",
@@ -14,15 +15,14 @@
   "dependencies": {
     "@cycle/dom": "^14.3.0",
     "@cycle/xstream-run": "^4.2.0",
-    "bs-platform": "^1.4.1",
     "bulma": "^0.3.0",
     "xstream": "^9.3.0"
   },
   "scripts": {
     "dev-server": "webpack-dev-server --progress --colors --content-base build/",
     "pack": "webpack -p",
-    "compile": "bsb -bin-annot",
+    "compile": "bsb",
     "build": "bsb && yarn run pack",
-    "watch": "bsb -w -bin-annot"
+    "watch": "bsb -w"
   }
 }
