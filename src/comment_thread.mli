@@ -1,6 +1,5 @@
-module Ct = Map_tree
-
 (** Comment tree. *)
+module Ct = Map_tree
 
 type comment
 type t
