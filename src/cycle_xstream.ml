@@ -18,6 +18,9 @@ let periodic period = xstream##default##periodic period
 let of_array array = xstream##default##fromArray array
 let singleton x = of_array [|x|]
 
+external combine_arr : ('t, 'a) t array -> ('t, 'a array) t =
+  "" [@@bs.module "./xstream_ops", "Xstream_ops"]
+
 external combine2 : ('t, 'a) t -> ('t, 'b) t -> ('t, ('a * 'b)) t =
   "" [@@bs.module "./xstream_ops", "Xstream_ops"]
 

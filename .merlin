@@ -5,9 +5,9 @@ B lib/bs/src
 FLG -ppx node_modules/bs-platform/bin/bsppx.exe
 
 ####{BSB GENERATED: NO EDIT
-S /Users/yamin1/code/bucklescript-cyclejs-test/node_modules/bs-platform/bin/../lib/ocaml
-B /Users/yamin1/code/bucklescript-cyclejs-test/node_modules/bs-platform/bin/../lib/ocaml
-FLG -ppx /Users/yamin1/code/bucklescript-cyclejs-test/node_modules/bs-platform/bin/bsppx.exe
+S /Users/yawar/code/bucklescript-cyclejs-test/node_modules/bs-platform/bin/../lib/ocaml
+B /Users/yawar/code/bucklescript-cyclejs-test/node_modules/bs-platform/bin/../lib/ocaml
+FLG -ppx /Users/yawar/code/bucklescript-cyclejs-test/node_modules/bs-platform/bin/bsppx.exe
 
 S src
 B lib/bs/src
